@@ -1,13 +1,19 @@
 package io.fqsh;
 
 import com.google.inject.Guice;
+import com.google.inject.Inject;
 import com.google.inject.Injector;
+import io.fqsh.fibonacci.FibonacciPanel;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class Application {
     private JFrame frame;
+    private JTabbedPane tabbedPane;
+
+    @Inject
+    private FibonacciPanel fibonacciPanel;
 
     public static void main(String[] args) {
         Injector injector = Guice.createInjector();
@@ -17,6 +23,7 @@ public class Application {
     }
 
     public void run() {
+        buildTabbedPane();
         buildFrame();
     }
 
@@ -27,5 +34,19 @@ public class Application {
         frame.setSize(960, 720);
         frame.setVisible(true);
         frame.setLocationRelativeTo(null);
+        frame.add(tabbedPane);
+    }
+
+    private void buildTabbedPane() {
+        tabbedPane = new JTabbedPane();
+        tabbedPane.add("Liczby Fibonacciego", fibonacciPanel.build());
+    }
+
+    public void blockTabbedPane() {
+        tabbedPane.setEnabled(false);
+    }
+
+    public void unblockTabbedPane() {
+        tabbedPane.setEnabled(true);
     }
 }
