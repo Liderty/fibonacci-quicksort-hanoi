@@ -12,12 +12,24 @@ public class FibonacciPanel {
     @Inject
     private FibonacciSettingsPanel fibonacciSettingsPanel;
 
+    @Inject
+    private FibonacciChartsPanel fibonacciChartsPanel;
+
     public JPanel build() {
         fibonacciPanel = new JPanel();
         fibonacciPanel.setLayout(new BorderLayout(10, 10));
         fibonacciPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         fibonacciPanel.add(fibonacciSettingsPanel.build(), BorderLayout.NORTH);
-
+        fibonacciPanel.add(buildInternalPanel(), BorderLayout.CENTER);
+        
         return fibonacciPanel;
+    }
+
+    private JPanel buildInternalPanel() {
+        JPanel internalPanel = new JPanel();
+        internalPanel.setLayout(new BorderLayout(10, 10));
+        internalPanel.add(fibonacciChartsPanel.build(), BorderLayout.CENTER);
+
+        return internalPanel;
     }
 }
