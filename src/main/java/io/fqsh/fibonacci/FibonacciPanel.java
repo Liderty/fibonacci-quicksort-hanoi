@@ -18,12 +18,16 @@ public class FibonacciPanel {
     @Inject
     private FibonacciTablePanel fibonacciTablePanel;
 
+    @Inject
+    private FibonacciConsolePanel fibonacciConsolePanel;
+
     public JPanel build() {
         fibonacciPanel = new JPanel();
         fibonacciPanel.setLayout(new BorderLayout(10, 10));
         fibonacciPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         fibonacciPanel.add(fibonacciSettingsPanel.build(), BorderLayout.NORTH);
         fibonacciPanel.add(buildInternalPanel(), BorderLayout.CENTER);
+        fibonacciPanel.add(fibonacciConsolePanel.build(), BorderLayout.SOUTH);
 
         return fibonacciPanel;
     }
