@@ -1,11 +1,14 @@
 package io.fqsh.fibonacci;
 
+import com.google.inject.Singleton;
+
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+@Singleton
 public class FibonacciConsolePanel {
     private JTextArea fibonacciConsoleTextArea;
     private JScrollPane fibonacciConsoleScrollPane;

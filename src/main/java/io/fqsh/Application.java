@@ -34,7 +34,7 @@ public class Application {
         frame.setSize(960, 720);
         frame.setVisible(true);
         frame.setLocationRelativeTo(null);
-        frame.add(tabbedPane);
+        frame.add(tabbedPane, BorderLayout.CENTER);
     }
 
     private void buildTabbedPane() {

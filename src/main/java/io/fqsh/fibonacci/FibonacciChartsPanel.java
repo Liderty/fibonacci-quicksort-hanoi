@@ -1,6 +1,7 @@
 package io.fqsh.fibonacci;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import org.knowm.xchart.XChartPanel;
 import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYChartBuilder;
@@ -14,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
+@Singleton
 public class FibonacciChartsPanel {
     private JPanel fibonacciChartsPanel;
     private XChartPanel<XYChart> iterationChartPanel;

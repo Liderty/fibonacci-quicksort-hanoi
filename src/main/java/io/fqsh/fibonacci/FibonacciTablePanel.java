@@ -1,6 +1,7 @@
 package io.fqsh.fibonacci;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -11,6 +12,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.stream.IntStream;
 
+@Singleton
 public class FibonacciTablePanel {
     private JTable table;
     private DefaultTableModel model;
