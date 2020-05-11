@@ -25,7 +25,7 @@ public class QuickSortSettingsPanel {
     private JPanel quickSortSettingsPanel;
     private final List<JComboBox<Integer>> quickSortSettingsPanelComboBoxes = new ArrayList<>();
     private JButton quickSortSettingsPanelCalculateButton;
-    private final List<Integer> samples = Arrays.asList(1, 5, 20, 30, 50);
+    private final List<Integer> samples = Arrays.asList(5, 10, 30, 50, 80);
 
     @Inject
     private Application application;
@@ -63,7 +63,7 @@ public class QuickSortSettingsPanel {
 
     private void buildComboBoxes() {
         IntStream.rangeClosed(0, 4).forEach(index -> {
-            JComboBox<Integer> comboBox = createRangeComboBox(index, 1, 50);
+            JComboBox<Integer> comboBox = createRangeComboBox(index, 5, 100);
 
             quickSortSettingsPanelComboBoxes.add(comboBox);
             quickSortSettingsPanel.add(comboBox);
