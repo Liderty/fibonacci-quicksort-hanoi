@@ -39,7 +39,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>me.plyschik.Application</mainClass>
+                            <mainClass>io.fqsh.Application</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
