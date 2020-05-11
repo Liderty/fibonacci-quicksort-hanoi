@@ -19,6 +19,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.IntStream;
 
+
 @Singleton
 public class QuickSortSettingsPanel {
     private JPanel quickSortSettingsPanel;
@@ -50,13 +51,13 @@ public class QuickSortSettingsPanel {
         quickSortSettingsPanel = new JPanel();
         quickSortSettingsPanel.setLayout(new GridLayout(1, 6, 10, 10));
         quickSortSettingsPanel.setBorder(new CompoundBorder(
-            BorderFactory.createTitledBorder(
-                    quickSortSettingsPanel.getBorder(),
-                "Ilość danych do posortowania",
-                TitledBorder.CENTER,
-                TitledBorder.TOP
-            ),
-            new EmptyBorder(10, 10, 10, 10)
+                BorderFactory.createTitledBorder(
+                        quickSortSettingsPanel.getBorder(),
+                        "Ilość danych do posortowania (w tys.)",
+                        TitledBorder.CENTER,
+                        TitledBorder.TOP
+                ),
+                new EmptyBorder(10, 10, 10, 10)
         ));
     }
 
@@ -71,7 +72,7 @@ public class QuickSortSettingsPanel {
 
     private JComboBox<Integer> createRangeComboBox(int index, int min, int max) {
         JComboBox<Integer> comboBox = new JComboBox<>(
-            IntStream.rangeClosed(min, max).boxed().toArray(Integer[]::new)
+                IntStream.rangeClosed(min, max).boxed().toArray(Integer[]::new)
         );
         comboBox.setSelectedItem(samples.get(index));
         comboBox.addItemListener(itemEvent -> {
@@ -108,35 +109,38 @@ public class QuickSortSettingsPanel {
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
         executor.execute(this::blockUI);
-        executor.execute(() -> quickSortConsolePanel.write("Rozpoczęto obliczenia."));
+        executor.execute(() -> quickSortConsolePanel.write("Rozpoczęto sortowanie."));
 
         IntStream.rangeClosed(0, 4).forEach(index -> {
-            executor.execute(() -> quickSortIterationWrapper(samples.get(index)));
-            executor.execute(() -> quickSortRecursiveWrapper(samples.get(index)));
+            int data_size = samples.get(index);
+
+            int [] unsortedDataForIteration = simplyDataGenerator(data_size);
+            int [] unsortedDataForRecursion = unsortedDataForIteration.clone();
+
+            executor.execute(() -> quickSortIterationWrapper(data_size, unsortedDataForIteration));
+            executor.execute(() -> quickSortRecursiveWrapper(data_size, unsortedDataForRecursion));
         });
 
-        executor.execute(() -> quickSortConsolePanel.write("Zakończono obliczenia."));
+        executor.execute(() -> quickSortConsolePanel.write("Zakończono sortowanie."));
         executor.execute(this::unblockUI);
     }
 
-    private int[] simplyDataGenerator(int n) {
-        int[] sampleArray = new int[n];
+    private int[] simplyDataGenerator(int data_size) {
+        int[] sampleArray = new int[data_size*1000];
         Random generator = new Random();
 
-        for (int i=0; i < sampleArray.length; i++) {
+        for (int i = 0; i < sampleArray.length; i++) {
             sampleArray[i] = generator.nextInt(1000);
         }
 
         return sampleArray;
     }
 
-    private void quickSortIterationWrapper(Integer n) {
+    private void quickSortIterationWrapper(int n, int [] unsorted_data) {
         int index = samples.indexOf(n);
 
-        int [] unsortedData = simplyDataGenerator(n);
-
         long startTime = System.nanoTime();
-        quickSortIteration(unsortedData, 0, n-1);
+        quickSortIteration(unsorted_data, 0, unsorted_data.length - 1);
         long finishTime = System.nanoTime();
 
         long timeElapsed = finishTime - startTime;
@@ -146,9 +150,9 @@ public class QuickSortSettingsPanel {
         quickSortTablePanel.setCellValueAt(index, 1, Utils.convertTime(timeElapsed));
 
         quickSortConsolePanel.write(String.format(
-            "Losowe dane o rozmiarze: %,d zostały posortowane iteracyjnie w czasie: %s. ",
-            n,
-            Utils.convertTime(timeElapsed)
+                "Losowe dane o rozmiarze: %,d (tys.) zostały posortowane iteracyjnie w czasie: %s. ",
+                n,
+                Utils.convertTime(timeElapsed)
         ));
     }
 
@@ -172,7 +176,6 @@ public class QuickSortSettingsPanel {
 
         return separatorLeftIndex + 1;
     }
-
 
     private void quickSortIteration(int sortedArray[], int leftIndex, int rightIndex) {
         int[] stack = new int[rightIndex - leftIndex + 1];
@@ -199,13 +202,11 @@ public class QuickSortSettingsPanel {
         }
     }
 
-    private void quickSortRecursiveWrapper(Integer n) {
+    private void quickSortRecursiveWrapper(int n, int [] unsorted_data) {
         int index = samples.indexOf(n);
 
-        int [] unsortedData = simplyDataGenerator(n);
-
         long startTime = System.nanoTime();
-        quickSortRecursive(unsortedData, 0, n-1);
+        quickSortRecursive(unsorted_data, 0, unsorted_data.length - 1);
         long finishTime = System.nanoTime();
 
         long timeElapsed = finishTime - startTime;
@@ -215,20 +216,20 @@ public class QuickSortSettingsPanel {
         quickSortTablePanel.setCellValueAt(index, 2, Utils.convertTime(timeElapsed));
 
         quickSortConsolePanel.write(String.format(
-                "Losowe dane o rozmiarze: %,d zostały posortowane rekurencyjnie w czasie: %s. ",
+                "Losowe dane o rozmiarze: %,d (tys.) zostały posortowane rekurencyjnie w czasie: %s. ",
                 n,
                 Utils.convertTime(timeElapsed)
         ));
     }
 
     private void quickSortRecursive(int sortedArray[], int leftIndex, int rightIndex) {
-            if (leftIndex < rightIndex) {
-                int separationIndex = separate(sortedArray, leftIndex, rightIndex);
+        if (leftIndex < rightIndex) {
+            int separationIndex = separate(sortedArray, leftIndex, rightIndex);
 
-                quickSortRecursive(sortedArray, leftIndex, separationIndex - 1);
-                quickSortRecursive(sortedArray, separationIndex + 1, rightIndex);
-            }
+            quickSortRecursive(sortedArray, leftIndex, separationIndex - 1);
+            quickSortRecursive(sortedArray, separationIndex + 1, rightIndex);
         }
+    }
 
     private void clearDataAfterActionIfValuesAreComputed() {
 
