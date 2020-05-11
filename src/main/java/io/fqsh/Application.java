@@ -36,7 +36,7 @@ public class Application {
     }
 
     private void buildFrame() {
-        frame = new JFrame("Liczby Fibonacciego, Sortowanie Szybkie (Quick Sort), Wieża Hanoi - iteracyjnie i rekurencyjnie (M. Liber, P. Lyschik, 2020)");
+        frame = new JFrame("Liczby Fibonacciego, Sortowanie Szybkie (Quick Sort), Wieże Hanoi - iteracyjnie i rekurencyjnie (M. Liber, P. Lyschik, 2020)");
         frame.setLayout(new BorderLayout(10, 10));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(960, 720);
@@ -50,7 +50,7 @@ public class Application {
 
         tabbedPane.add("Liczby Fibonacciego", fibonacciPanel.build());
         tabbedPane.add("Sortowanie Szybkie (Quick Sort)", quickSortPanel.build());
-        tabbedPane.add("Wieża Hanoi", hanoiPanel.build());
+        tabbedPane.add("Wieże Hanoi", hanoiPanel.build());
     }
 
     public void blockTabbedPane() {
