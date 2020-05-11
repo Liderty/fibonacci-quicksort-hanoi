@@ -4,6 +4,7 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import io.fqsh.fibonacci.FibonacciPanel;
+import io.fqsh.hanoi.TowerOfHanoiPanel;
 import io.fqsh.quickSort.QuickSortPanel;
 
 import javax.swing.*;
@@ -18,6 +19,9 @@ public class Application {
 
     @Inject
     private QuickSortPanel quickSortPanel;
+
+    @Inject
+    private TowerOfHanoiPanel hanoiPanel;
 
     public static void main(String[] args) {
         Injector injector = Guice.createInjector();
@@ -46,6 +50,7 @@ public class Application {
 
         tabbedPane.add("Liczby Fibonacciego", fibonacciPanel.build());
         tabbedPane.add("Sortowanie Szybkie", quickSortPanel.build());
+        tabbedPane.add("Wieże Hanoi", hanoiPanel.build());
     }
 
     public void blockTabbedPane() {
