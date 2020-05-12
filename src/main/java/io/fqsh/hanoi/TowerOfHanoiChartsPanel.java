@@ -54,7 +54,7 @@ public class TowerOfHanoiChartsPanel {
 
         recursiveChart = new XYChartBuilder()
             .title("Rekurencyjnie")
-            .xAxisTitle("Ilość krążków")
+            .xAxisTitle("Liczba krążków")
             .yAxisTitle("Czas obliczania (ns)")
             .build();
 

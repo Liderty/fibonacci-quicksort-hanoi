@@ -23,7 +23,7 @@ public class TowerOfHanoiSettingsPanel {
     private JPanel hanoiSettingsPanel;
     private final List<JComboBox<Integer>> hanoiSettingsPanelComboBoxes = new ArrayList<>();
     private JButton hanoiSettingsPanelCalculateButton;
-    private final List<Integer> samples = Arrays.asList(3, 15, 20, 22, 25);
+    private final List<Integer> samples = Arrays.asList(3, 10, 15, 18, 20);
 
     @Inject
     private Application application;
@@ -51,7 +51,7 @@ public class TowerOfHanoiSettingsPanel {
         hanoiSettingsPanel.setBorder(new CompoundBorder(
             BorderFactory.createTitledBorder(
                     hanoiSettingsPanel.getBorder(),
-                "Ilość krążków do przełożenia",
+                "Liczba krążków do przełożenia",
                 TitledBorder.CENTER,
                 TitledBorder.TOP
             ),
@@ -61,7 +61,7 @@ public class TowerOfHanoiSettingsPanel {
 
     private void buildComboBoxes() {
         IntStream.rangeClosed(0, 4).forEach(index -> {
-            JComboBox<Integer> comboBox = createRangeComboBox(index, 1, 26);
+            JComboBox<Integer> comboBox = createRangeComboBox(index, 1, 22);
 
             hanoiSettingsPanelComboBoxes.add(comboBox);
             hanoiSettingsPanel.add(comboBox);
@@ -92,7 +92,7 @@ public class TowerOfHanoiSettingsPanel {
         hanoiSettingsPanelCalculateButton = new JButton("Oblicz");
         hanoiSettingsPanelCalculateButton.addActionListener(actionEvent -> {
             if (samples.stream().distinct().count() < 5) {
-                JOptionPane.showMessageDialog(null, "Ilość wybranych krążków nie powinna się powtarzać!");
+                JOptionPane.showMessageDialog(null, "Liczba wybranych krążków nie powinna się powtarzać!");
 
                 return;
             }
@@ -132,7 +132,7 @@ public class TowerOfHanoiSettingsPanel {
         hanoiTablePanel.setCellValueAt(index, 1, Utils.convertTime(timeElapsed));
 
         hanoiConsolePanel.write(String.format(
-                "Wieża Hanoi złożona z %d krążków, została ułożona rekurencyjnie w czasie: %s. Wykonano %d ruchów.",
+                "Wieża Hanoi złożona z %d krążków, została ułożona iteracyjnie w czasie: %s. Wykonano %d ruchów.",
             n,
             Utils.convertTime(timeElapsed),
                 result
