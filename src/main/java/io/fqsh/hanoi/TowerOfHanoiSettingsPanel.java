@@ -23,7 +23,7 @@ public class TowerOfHanoiSettingsPanel {
     private JPanel hanoiSettingsPanel;
     private final List<JComboBox<Integer>> hanoiSettingsPanelComboBoxes = new ArrayList<>();
     private JButton hanoiSettingsPanelCalculateButton;
-    private final List<Integer> samples = Arrays.asList(3, 10, 15, 18, 20);
+    private final List<Integer> samples = Arrays.asList(20, 21, 22, 23, 24);
 
     @Inject
     private Application application;
@@ -50,7 +50,7 @@ public class TowerOfHanoiSettingsPanel {
         hanoiSettingsPanel.setLayout(new GridLayout(1, 6, 10, 10));
         hanoiSettingsPanel.setBorder(new CompoundBorder(
             BorderFactory.createTitledBorder(
-                    hanoiSettingsPanel.getBorder(),
+                hanoiSettingsPanel.getBorder(),
                 "Liczba krążków do przełożenia",
                 TitledBorder.CENTER,
                 TitledBorder.TOP
@@ -61,7 +61,7 @@ public class TowerOfHanoiSettingsPanel {
 
     private void buildComboBoxes() {
         IntStream.rangeClosed(0, 4).forEach(index -> {
-            JComboBox<Integer> comboBox = createRangeComboBox(index, 1, 22);
+            JComboBox<Integer> comboBox = createRangeComboBox(index, 1, 25);
 
             hanoiSettingsPanelComboBoxes.add(comboBox);
             hanoiSettingsPanel.add(comboBox);
@@ -132,10 +132,10 @@ public class TowerOfHanoiSettingsPanel {
         hanoiTablePanel.setCellValueAt(index, 1, Utils.convertTime(timeElapsed));
 
         hanoiConsolePanel.write(String.format(
-                "Wieża Hanoi złożona z %d krążków, została ułożona iteracyjnie w czasie: %s. Wykonano %d ruchów.",
+            "Wieża Hanoi złożona z %d krążków została ułożona iteracyjnie w czasie: %s (%,d ruchów).",
             n,
             Utils.convertTime(timeElapsed),
-                result
+            result
         ));
     }
 
@@ -159,10 +159,10 @@ public class TowerOfHanoiSettingsPanel {
         hanoiTablePanel.setCellValueAt(index, 2, Utils.convertTime(timeElapsed));
 
         hanoiConsolePanel.write(String.format(
-            "Wieża Hanoi złożona z %d krążków, została ułożona rekurencyjnie w czasie: %s. Wykonano %d ruchów.",
+            "Wieża Hanoi złożona z %d krążków została ułożona rekurencyjnie w czasie: %s (%,d ruchów).",
             n,
             Utils.convertTime(timeElapsed),
-                result
+            result
         ));
     }
 

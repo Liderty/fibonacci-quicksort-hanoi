@@ -19,13 +19,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.IntStream;
 
-
 @Singleton
 public class QuickSortSettingsPanel {
     private JPanel quickSortSettingsPanel;
     private final List<JComboBox<Integer>> quickSortSettingsPanelComboBoxes = new ArrayList<>();
     private JButton quickSortSettingsPanelCalculateButton;
-    private final List<Integer> samples = Arrays.asList(5, 10, 30, 50, 80);
+    private final List<Integer> samples = Arrays.asList(50, 60, 70, 80, 90);
 
     @Inject
     private Application application;
@@ -53,7 +52,7 @@ public class QuickSortSettingsPanel {
         quickSortSettingsPanel.setBorder(new CompoundBorder(
                 BorderFactory.createTitledBorder(
                         quickSortSettingsPanel.getBorder(),
-                        "Ilość danych do posortowania (w tys.)",
+                        "Liczba elementów do posortowania (w tys.)",
                         TitledBorder.CENTER,
                         TitledBorder.TOP
                 ),
@@ -150,7 +149,7 @@ public class QuickSortSettingsPanel {
         quickSortTablePanel.setCellValueAt(index, 1, Utils.convertTime(timeElapsed));
 
         quickSortConsolePanel.write(String.format(
-                "Losowe dane o rozmiarze: %,d (tys.) zostały posortowane iteracyjnie w czasie: %s. ",
+                "Losowe elementy o rozmiarze: %,d tys. zostały posortowane iteracyjnie w czasie: %s.",
                 n,
                 Utils.convertTime(timeElapsed)
         ));
@@ -216,7 +215,7 @@ public class QuickSortSettingsPanel {
         quickSortTablePanel.setCellValueAt(index, 2, Utils.convertTime(timeElapsed));
 
         quickSortConsolePanel.write(String.format(
-                "Losowe dane o rozmiarze: %,d (tys.) zostały posortowane rekurencyjnie w czasie: %s. ",
+                "Losowe elementy o rozmiarze: %,d tys. zostały posortowane rekurencyjnie w czasie: %s.",
                 n,
                 Utils.convertTime(timeElapsed)
         ));

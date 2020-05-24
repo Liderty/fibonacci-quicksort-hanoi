@@ -52,7 +52,7 @@ public class TowerOfHanoiTablePanel {
 
     private JScrollPane buildTable() {
         String[] columns = new String[] {
-            "Ilość krążków", "Czas obliczenia - iteracyjnie", "Czas obliczenia - rekurencyjnie"
+            "Liczba krążków", "Czas obliczenia - iteracyjnie", "Czas obliczenia - rekurencyjnie"
         };
 
         Object[][] rows = new Object[5][3];

@@ -40,7 +40,7 @@ public class QuickSortChartsPanel {
 
         iterationChart = new XYChartBuilder()
             .title("Iteracyjnie")
-            .xAxisTitle("Ilość sortowanych danych (w tys.)")
+            .xAxisTitle("Liczba posortowanych elementów (w tys.)")
             .yAxisTitle("Czas obliczania (ns)")
             .build();
 
@@ -54,7 +54,7 @@ public class QuickSortChartsPanel {
 
         recursiveChart = new XYChartBuilder()
             .title("Rekurencyjnie")
-            .xAxisTitle("Ilość sortowanych danych (w tys.)")
+            .xAxisTitle("Liczba posortowanych elementów (w tys.)")
             .yAxisTitle("Czas obliczania (ns)")
             .build();
 

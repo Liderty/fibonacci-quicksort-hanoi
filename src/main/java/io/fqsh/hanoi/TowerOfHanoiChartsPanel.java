@@ -32,7 +32,7 @@ public class TowerOfHanoiChartsPanel {
         hanoiChartsPanel = new JPanel();
         hanoiChartsPanel.setLayout(new GridLayout(1, 2));
         hanoiChartsPanel.setBorder(BorderFactory.createTitledBorder(
-                hanoiChartsPanel.getBorder(),
+            hanoiChartsPanel.getBorder(),
             "Wykresy czasu obliczeń w zależności od podejścia",
             TitledBorder.CENTER,
             TitledBorder.TOP
@@ -40,7 +40,7 @@ public class TowerOfHanoiChartsPanel {
 
         iterationChart = new XYChartBuilder()
             .title("Iteracyjnie")
-            .xAxisTitle("Ilość krążków")
+            .xAxisTitle("Liczba krążków")
             .yAxisTitle("Czas obliczania (ns)")
             .build();
 
