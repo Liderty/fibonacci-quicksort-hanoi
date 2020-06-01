@@ -39,7 +39,7 @@ public class FibonacciTablePanel {
         panel.setBorder(new CompoundBorder(
             BorderFactory.createTitledBorder(
                 panel.getBorder(),
-                "Tabela czasów obliczeń w zależności od podejścia",
+                "Tabela czasów obliczania w zależności od podejścia",
                 TitledBorder.CENTER,
                 TitledBorder.TOP
             ),
@@ -52,7 +52,7 @@ public class FibonacciTablePanel {
 
     private JScrollPane buildTable() {
         String[] columns = new String[] {
-            "Wyraz ciągu Fibonacciego", "Czas obliczenia - iteracyjnie", "Czas obliczenia - rekurencyjnie"
+            "Wyraz ciągu Fibonacciego", "Czas obliczania - iteracyjnie", "Czas obliczania - rekurencyjnie"
         };
 
         Object[][] rows = new Object[5][3];

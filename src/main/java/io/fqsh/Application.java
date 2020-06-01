@@ -21,18 +21,25 @@ public class Application {
     private QuickSortPanel quickSortPanel;
 
     @Inject
-    private TowerOfHanoiPanel hanoiPanel;
+    private TowerOfHanoiPanel towerOfHanoiPanel;
 
     public static void main(String[] args) {
         Injector injector = Guice.createInjector();
         Application application = injector.getInstance(Application.class);
 
-        SwingUtilities.invokeLater(application::run);
+        SwingUtilities.invokeLater(() -> application.run());
     }
 
     public void run() {
         buildTabbedPane();
         buildFrame();
+    }
+
+    private void buildTabbedPane() {
+        tabbedPane = new JTabbedPane();
+        tabbedPane.add("Liczby Fibonacciego", fibonacciPanel.build());
+        tabbedPane.add("Sortowanie szybkie (QuickSort)", quickSortPanel.build());
+        tabbedPane.add("Wieże Hanoi", towerOfHanoiPanel.build());
     }
 
     private void buildFrame() {
@@ -43,14 +50,6 @@ public class Application {
         frame.setVisible(true);
         frame.setLocationRelativeTo(null);
         frame.add(tabbedPane, BorderLayout.CENTER);
-    }
-
-    private void buildTabbedPane() {
-        tabbedPane = new JTabbedPane();
-
-        tabbedPane.add("Liczby Fibonacciego", fibonacciPanel.build());
-        tabbedPane.add("Sortowanie szybkie (QuickSort)", quickSortPanel.build());
-        tabbedPane.add("Wieże Hanoi", hanoiPanel.build());
     }
 
     public void blockTabbedPane() {

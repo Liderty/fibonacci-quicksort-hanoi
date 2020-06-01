@@ -14,8 +14,8 @@ import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.IntStream;
 
 @Singleton
@@ -24,6 +24,8 @@ public class FibonacciSettingsPanel {
     private final List<JComboBox<Integer>> fibonacciSettingsPanelComboBoxes = new ArrayList<>();
     private JButton fibonacciSettingsPanelCalculateButton;
     private final List<Integer> samples = Arrays.asList(40, 42, 44, 46, 48);
+    public static final int SAMPLE_MIN_VALUE = 1;
+    public static final int SAMPLE_MAX_VALUE = 50;
 
     @Inject
     private Application application;
@@ -61,7 +63,7 @@ public class FibonacciSettingsPanel {
 
     private void buildComboBoxes() {
         IntStream.rangeClosed(0, 4).forEach(index -> {
-            JComboBox<Integer> comboBox = createRangeComboBox(index, 1, 50);
+            JComboBox<Integer> comboBox = createRangeComboBox(index, SAMPLE_MIN_VALUE, SAMPLE_MAX_VALUE);
 
             fibonacciSettingsPanelComboBoxes.add(comboBox);
             fibonacciSettingsPanel.add(comboBox);
@@ -79,8 +81,10 @@ public class FibonacciSettingsPanel {
 
                 Integer value = (Integer) itemEvent.getItem();
                 samples.set(index, value);
+
                 fibonacciChartsPanel.updateIterationChart();
                 fibonacciChartsPanel.updateRecursiveChart();
+
                 fibonacciTablePanel.setCellValueAt(index, 0, value);
             }
         });
@@ -104,25 +108,23 @@ public class FibonacciSettingsPanel {
     }
 
     private void calculate() {
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-
-        executor.execute(this::blockUI);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> blockUI());
         executor.execute(() -> fibonacciConsolePanel.write("Rozpoczęto obliczenia."));
-
         IntStream.rangeClosed(0, 4).forEach(index -> {
-            executor.execute(() -> fibonacciIterationWrapper(samples.get(index)));
-            executor.execute(() -> fibonacciRecursiveWrapper(samples.get(index)));
+            executor.execute(() -> fibonacciIterationExecutor(samples.get(index)));
+            executor.execute(() -> fibonacciRecursiveExecutor(samples.get(index)));
         });
-
         executor.execute(() -> fibonacciConsolePanel.write("Zakończono obliczenia."));
-        executor.execute(this::unblockUI);
+        executor.execute(() -> unblockUI());
+        executor.shutdown();
     }
 
-    private void fibonacciIterationWrapper(Integer n) {
+    private void fibonacciIterationExecutor(Integer n) {
         int index = samples.indexOf(n);
 
         long startTime = System.nanoTime();
-        long result = fibonacciIteration(n);
+        long result = FibonacciIteration.calculate(n);
         long finishTime = System.nanoTime();
 
         long timeElapsed = finishTime - startTime;
@@ -139,28 +141,11 @@ public class FibonacciSettingsPanel {
         ));
     }
 
-    private Long fibonacciIteration(long n) {
-        if (n == 0 || n == 1) return n;
-
-        long a = 1;
-        long b = 1;
-        long temporary;
-
-        for (int i = 0; i < (n - 2); i++) {
-            temporary = a;
-            a = b;
-            b = temporary;
-            b += a;
-        }
-
-        return b;
-    }
-
-    private void fibonacciRecursiveWrapper(Integer n) {
+    private void fibonacciRecursiveExecutor(Integer n) {
         int index = samples.indexOf(n);
 
         long startTime = System.nanoTime();
-        long result = fibonacciRecursive(n);
+        long result = FibonacciRecursive.calculate(n);
         long finishTime = System.nanoTime();
 
         long timeElapsed = finishTime - startTime;
@@ -177,14 +162,7 @@ public class FibonacciSettingsPanel {
         ));
     }
 
-    private long fibonacciRecursive(long n) {
-        if (n == 0 || n == 1) return n;
-
-        return fibonacciRecursive(n - 1) + fibonacciRecursive(n - 2);
-    }
-
     private void clearDataAfterActionIfValuesAreComputed() {
-
         if (fibonacciChartsPanel.getIterationTimes().stream().noneMatch(value -> value.equals(0L))) {
             fibonacciChartsPanel.resetData();
             fibonacciChartsPanel.updateIterationChart();

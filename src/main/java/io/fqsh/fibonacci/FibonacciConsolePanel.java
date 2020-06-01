@@ -36,7 +36,6 @@ public class FibonacciConsolePanel {
             dateTimeFormatter.format(LocalDateTime.now()),
             message
         ));
-
         fibonacciConsoleTextArea.setCaretPosition(fibonacciConsoleTextArea.getDocument().getLength());
     }
 
