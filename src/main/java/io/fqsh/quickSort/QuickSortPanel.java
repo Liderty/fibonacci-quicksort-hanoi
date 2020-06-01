@@ -8,6 +8,7 @@ import java.awt.*;
 
 public class QuickSortPanel {
     private JPanel quickSortPanel;
+    private JPanel internalPanel;
 
     @Inject
     private QuickSortSettingsPanel quickSortSettingsPanel;
@@ -22,22 +23,22 @@ public class QuickSortPanel {
     private QuickSortConsolePanel quickSortConsolePanel;
 
     public JPanel build() {
+        buildInternalPanel();
+
         quickSortPanel = new JPanel();
         quickSortPanel.setLayout(new BorderLayout(10, 10));
         quickSortPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         quickSortPanel.add(quickSortSettingsPanel.build(), BorderLayout.NORTH);
-        quickSortPanel.add(buildInternalPanel(), BorderLayout.CENTER);
+        quickSortPanel.add(internalPanel, BorderLayout.CENTER);
         quickSortPanel.add(quickSortConsolePanel.build(), BorderLayout.SOUTH);
 
         return quickSortPanel;
     }
 
-    private JPanel buildInternalPanel() {
-        JPanel internalPanel = new JPanel();
+    private void buildInternalPanel() {
+        internalPanel = new JPanel();
         internalPanel.setLayout(new BorderLayout(10, 10));
         internalPanel.add(quickSortChartsPanel.build(), BorderLayout.CENTER);
         internalPanel.add(quickSortTablePanel.build(), BorderLayout.SOUTH);
-
-        return internalPanel;
     }
 }

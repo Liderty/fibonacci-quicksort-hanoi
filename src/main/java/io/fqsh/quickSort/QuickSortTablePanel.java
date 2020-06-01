@@ -52,7 +52,7 @@ public class QuickSortTablePanel {
 
     private JScrollPane buildTable() {
         String[] columns = new String[] {
-            "Liczba posortowanych elementów (w tys.)", "Czas obliczenia - iteracyjnie", "Czas obliczenia - rekurencyjnie"
+            "Liczba posortowanych elementów (w tys.)", "Czas obliczania - iteracyjnie", "Czas obliczania - rekurencyjnie"
         };
 
         Object[][] rows = new Object[5][3];

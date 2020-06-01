@@ -36,7 +36,6 @@ public class QuickSortConsolePanel {
             dateTimeFormatter.format(LocalDateTime.now()),
             message
         ));
-
         quickSortConsoleTextArea.setCaretPosition(quickSortConsoleTextArea.getDocument().getLength());
     }
 

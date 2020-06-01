@@ -9,6 +9,7 @@ import io.fqsh.quickSort.QuickSortPanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 
 public class Application {
     private JFrame frame;

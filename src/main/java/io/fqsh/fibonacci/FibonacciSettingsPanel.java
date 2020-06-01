@@ -96,7 +96,7 @@ public class FibonacciSettingsPanel {
         fibonacciSettingsPanelCalculateButton = new JButton("Oblicz");
         fibonacciSettingsPanelCalculateButton.addActionListener(actionEvent -> {
             if (samples.stream().distinct().count() < 5) {
-                JOptionPane.showMessageDialog(null, "Każdy wybrany wyraz powinien wystąpić tylko raz!");
+                JOptionPane.showMessageDialog(null, "Wybrane wartości nie powinny się powtarzać!");
 
                 return;
             }
