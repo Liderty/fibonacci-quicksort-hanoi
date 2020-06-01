@@ -33,46 +33,56 @@ public class TowerOfHanoiChartsPanel {
         hanoiChartsPanel.setLayout(new GridLayout(1, 2));
         hanoiChartsPanel.setBorder(BorderFactory.createTitledBorder(
             hanoiChartsPanel.getBorder(),
-            "Wykresy czasu obliczeń w zależności od podejścia",
+            "Wykresy prezentujące czas obliczania w zależności od podejścia",
             TitledBorder.CENTER,
             TitledBorder.TOP
         ));
 
+        buildIterationChart();
+        hanoiChartsPanel.add(iterationChartPanel);
+
+        buildRecursiveChart();
+        hanoiChartsPanel.add(recursiveChartPanel);
+
+        return hanoiChartsPanel;
+    }
+
+    private void buildIterationChart() {
         iterationChart = new XYChartBuilder()
             .title("Iteracyjnie")
             .xAxisTitle("Liczba krążków")
             .yAxisTitle("Czas obliczania (ns)")
             .build();
 
-        iterationChart.getStyler().setChartBackgroundColor(new Color(238, 238, 238));
-        iterationChart.getStyler().setChartTitlePadding(10);
-        iterationChart.getStyler().setLegendVisible(false);
-        iterationChart.getStyler().setToolTipsEnabled(true);
-        iterationChart.getStyler().setToolTipType(Styler.ToolTipType.yLabels);
-
         iterationChart.addSeries("times", hanoiSettingsPanel.getSamples(), iterationTimes);
 
+        iterationChart.getStyler()
+            .setChartBackgroundColor(new Color(238, 238, 238))
+            .setChartTitlePadding(10)
+            .setLegendVisible(false)
+            .setToolTipsEnabled(true)
+            .setToolTipType(Styler.ToolTipType.yLabels);
+
+        iterationChartPanel = new XChartPanel<>(iterationChart);
+    }
+
+    private void buildRecursiveChart() {
         recursiveChart = new XYChartBuilder()
             .title("Rekurencyjnie")
             .xAxisTitle("Liczba krążków")
             .yAxisTitle("Czas obliczania (ns)")
             .build();
 
-        recursiveChart.getStyler().setChartBackgroundColor(new Color(238, 238, 238));
-        recursiveChart.getStyler().setChartTitlePadding(10);
-        recursiveChart.getStyler().setLegendVisible(false);
-        recursiveChart.getStyler().setToolTipsEnabled(true);
-        recursiveChart.getStyler().setToolTipType(Styler.ToolTipType.yLabels);
-
         recursiveChart.addSeries("times", hanoiSettingsPanel.getSamples(), recursiveTimes);
 
-        iterationChartPanel = new XChartPanel<>(iterationChart);
+        recursiveChart.getStyler()
+            .setChartBackgroundColor(new Color(238, 238, 238))
+            .setChartTitlePadding(10)
+            .setLegendVisible(false)
+            .setToolTipsEnabled(true)
+            .setToolTipType(Styler.ToolTipType.yLabels);
+
         recursiveChartPanel = new XChartPanel<>(recursiveChart);
-
-        hanoiChartsPanel.add(iterationChartPanel);
-        hanoiChartsPanel.add(recursiveChartPanel);
-
-        return hanoiChartsPanel;
     }
 
     public void setIterationTimeAt(int index, long value) {

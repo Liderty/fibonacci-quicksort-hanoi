@@ -39,7 +39,7 @@ public class FibonacciTablePanel {
         panel.setBorder(new CompoundBorder(
             BorderFactory.createTitledBorder(
                 panel.getBorder(),
-                "Tabela czasów obliczeń w zależności od podejścia",
+                "Tabela czasów obliczania w zależności od podejścia",
                 TitledBorder.CENTER,
                 TitledBorder.TOP
             ),

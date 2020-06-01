@@ -3,13 +3,12 @@ package io.fqsh.hanoi;
 import java.util.ArrayList;
 
 public class IterativeHanoiTower {
+    private final int disksNumber;
+    private final ArrayList<String> iterativeSteps;
 
-    private int disksNumber;
-    private ArrayList<String> iterativeSteps;
-
-    IterativeHanoiTower(int disks_number) {
-        this.disksNumber = disks_number;
-        this.iterativeSteps = new ArrayList<String>();
+    public IterativeHanoiTower(int disksNumber) {
+        this.disksNumber = disksNumber;
+        this.iterativeSteps = new ArrayList<>();
     }
 
     private int countNumberOfSteps() {
@@ -24,32 +23,33 @@ public class IterativeHanoiTower {
             checkedStep /= 2;
             stepDiskNumber++;
         }
+
         return stepDiskNumber;
     }
 
-    private int getSoutcePeg(int step, int disk_number) {
-        return (countDiskMoves(step, disk_number) * checkMoveDestination(disk_number)) % 3;
+    private int getSourcePeg(int step, int diskNumber) {
+        return (countDiskMoves(step, diskNumber) * checkMoveDestination(diskNumber)) % 3;
     }
 
-    private int getTargetPeg(int source_peg, int disk_number) {
-        return (source_peg + checkMoveDestination(disk_number)) % 3;
+    private int getTargetPeg(int sourcePeg, int diskNumber) {
+        return (sourcePeg + checkMoveDestination(diskNumber)) % 3;
     }
 
-    private int countDiskMoves(int step, int disk_number) {
-        while (disk_number != 0) {
+    private int countDiskMoves(int step, int diskNumber) {
+        while (diskNumber != 0) {
             step /= 2;
-            disk_number--;
+            diskNumber--;
         }
 
         return (step + 1) / 2;
     }
 
-    private int checkMoveDestination(int disk_number) {
-        return 2 - ((disksNumber + disk_number) % 2);
+    private int checkMoveDestination(int diskNumber) {
+        return 2 - ((disksNumber + diskNumber) % 2);
     }
 
-    private void saveMove(int disk_number, int source_peg, int target_peg) {
-        this.iterativeSteps.add("Disk " + disk_number + " from " + source_peg + " to " + target_peg + "");
+    private void saveMove(int diskNumber, int sourcePeg, int targetPeg) {
+        this.iterativeSteps.add("Disk " + diskNumber + " from " + sourcePeg + " to " + targetPeg + "");
     }
 
     public int getNumberOfMoves() {
@@ -60,10 +60,10 @@ public class IterativeHanoiTower {
         for (int step = 0; step < countNumberOfSteps(); step++) {
             int stepDiskNumber = getDiskToMoveNumber(step);
 
-            int source_peg = getSoutcePeg(step, stepDiskNumber);
-            int target_peg = getTargetPeg(source_peg, stepDiskNumber);
+            int sourcePeg = getSourcePeg(step, stepDiskNumber);
+            int targetPeg = getTargetPeg(sourcePeg, stepDiskNumber);
 
-            saveMove(stepDiskNumber, source_peg, target_peg);
+            saveMove(stepDiskNumber, sourcePeg, targetPeg);
         }
     }
 }

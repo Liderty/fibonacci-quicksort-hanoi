@@ -33,7 +33,7 @@ public class QuickSortChartsPanel {
         quickSortChartsPanel.setLayout(new GridLayout(1, 2));
         quickSortChartsPanel.setBorder(BorderFactory.createTitledBorder(
             quickSortChartsPanel.getBorder(),
-            "Wykresy czasu obliczeń w zależności od podejścia",
+            "Wykresy prezentujące czas obliczania w zależności od podejścia",
             TitledBorder.CENTER,
             TitledBorder.TOP
         ));
@@ -50,7 +50,7 @@ public class QuickSortChartsPanel {
     private void buildIterationChart() {
         iterationChart = new XYChartBuilder()
             .title("Iteracyjnie")
-            .xAxisTitle("Liczba posortowanych elementów (w tys.)")
+            .xAxisTitle("Liczba elementów (w tys.)")
             .yAxisTitle("Czas obliczania (ns)")
             .build();
 
@@ -69,7 +69,7 @@ public class QuickSortChartsPanel {
     private void buildRecursiveChart() {
         recursiveChart = new XYChartBuilder()
             .title("Rekurencyjnie")
-            .xAxisTitle("Liczba posortowanych elementów (w tys.)")
+            .xAxisTitle("Liczba elementów (w tys.)")
             .yAxisTitle("Czas obliczania (ns)")
             .build();
 

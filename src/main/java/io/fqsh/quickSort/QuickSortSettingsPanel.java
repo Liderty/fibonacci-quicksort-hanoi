@@ -111,16 +111,16 @@ public class QuickSortSettingsPanel {
     private void calculate() {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> blockUI());
-        executor.execute(() -> quickSortConsolePanel.write("Rozpoczęto sortowanie."));
+        executor.execute(() -> quickSortConsolePanel.write("Rozpoczęto obliczenia."));
         IntStream.rangeClosed(0, 4).forEach(index -> {
             int elementsInThousands = samples.get(index);
             int[] unsortedDataForIteration = simplyDataGenerator(elementsInThousands);
             int[] unsortedDataForRecursion = unsortedDataForIteration.clone();
 
-            executor.execute(() -> quickSortIterationWrapper(elementsInThousands, unsortedDataForIteration));
-            executor.execute(() -> quickSortRecursiveWrapper(elementsInThousands, unsortedDataForRecursion));
+            executor.execute(() -> quickSortIterationExecutor(elementsInThousands, unsortedDataForIteration));
+            executor.execute(() -> quickSortRecursiveExecutor(elementsInThousands, unsortedDataForRecursion));
         });
-        executor.execute(() -> quickSortConsolePanel.write("Zakończono sortowanie."));
+        executor.execute(() -> quickSortConsolePanel.write("Zakończono obliczenia."));
         executor.execute(() -> unblockUI());
         executor.shutdown();
     }
@@ -129,7 +129,7 @@ public class QuickSortSettingsPanel {
         return (new Random()).ints(elementsInThousands * 1000, 0, 100_000).toArray();
     }
 
-    private void quickSortIterationWrapper(int n, int[] unsortedData) {
+    private void quickSortIterationExecutor(int n, int[] unsortedData) {
         int index = samples.indexOf(n);
 
         long startTime = System.nanoTime();
@@ -149,7 +149,7 @@ public class QuickSortSettingsPanel {
         ));
     }
 
-    private void quickSortRecursiveWrapper(int n, int[] unsortedData) {
+    private void quickSortRecursiveExecutor(int n, int[] unsortedData) {
         int index = samples.indexOf(n);
 
         long startTime = System.nanoTime();
