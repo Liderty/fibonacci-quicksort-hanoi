@@ -88,6 +88,18 @@ public class QuickSortTablePanel {
         setValueToCells("Obliczanie...");
     }
 
+    public void setCellsToCalculatingCancelState() {
+        IntStream.rangeClosed(0, 4).forEach(index -> {
+            if (model.getValueAt(index, 1).equals("Obliczanie...")) {
+                model.setValueAt("0 ns", index, 1);
+            }
+
+            if (model.getValueAt(index, 2).equals("Obliczanie...")) {
+                model.setValueAt("0 ns", index, 2);
+            }
+        });
+    }
+
     private void setValueToCells(String message) {
         IntStream.rangeClosed(0, 4).forEach(index -> {
             model.setValueAt(message, index, 1);

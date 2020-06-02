@@ -9,6 +9,7 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
@@ -16,13 +17,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
 @Singleton
 public class FibonacciSettingsPanel {
+    private ExecutorService executorService;
+    private final List<Future<?>> futures = new ArrayList<>();
     private JPanel fibonacciSettingsPanel;
-    private final List<JComboBox<Integer>> fibonacciSettingsPanelComboBoxes = new ArrayList<>();
+    private JPanel fibonacciSamplesPanel;
+    private JPanel fibonacciActionsPanel;
     private JButton fibonacciSettingsPanelCalculateButton;
+    private JButton fibonacciSettingsPanelCancelButton;
+    private final List<JComboBox<Integer>> fibonacciSettingsPanelComboBoxes = new ArrayList<>();
     private final List<Integer> samples = Arrays.asList(40, 42, 44, 46, 48);
     public static final int SAMPLE_MIN_VALUE = 1;
     public static final int SAMPLE_MAX_VALUE = 50;
@@ -40,25 +47,51 @@ public class FibonacciSettingsPanel {
     private FibonacciConsolePanel fibonacciConsolePanel;
 
     public JPanel build() {
+        buildSamplesPanel();
+        buildActionsPanel();
         buildSettingsPanel();
-        buildComboBoxes();
-        buildCalculateButton();
 
         return fibonacciSettingsPanel;
     }
 
-    private void buildSettingsPanel() {
-        fibonacciSettingsPanel = new JPanel();
-        fibonacciSettingsPanel.setLayout(new GridLayout(1, 6, 10, 10));
-        fibonacciSettingsPanel.setBorder(new CompoundBorder(
+    private void buildSamplesPanel() {
+        fibonacciSamplesPanel = new JPanel();
+        fibonacciSamplesPanel.setLayout(new GridLayout(1, 5, 10, 10));
+        fibonacciSamplesPanel.setBorder(new CompoundBorder(
             BorderFactory.createTitledBorder(
-                fibonacciSettingsPanel.getBorder(),
+                fibonacciSamplesPanel.getBorder(),
                 "Wyrazy ciągu Fibonacciego do obliczenia",
                 TitledBorder.CENTER,
                 TitledBorder.TOP
             ),
             new EmptyBorder(10, 10, 10, 10)
         ));
+
+        buildComboBoxes();
+    }
+
+    private void buildActionsPanel() {
+        fibonacciActionsPanel = new JPanel();
+        fibonacciActionsPanel.setLayout(new GridLayout(1, 2, 10, 10));
+        fibonacciActionsPanel.setBorder(new CompoundBorder(
+            BorderFactory.createTitledBorder(
+                fibonacciActionsPanel.getBorder(),
+                "Obliczenia",
+                TitledBorder.CENTER,
+                TitledBorder.TOP
+            ),
+            new EmptyBorder(10, 10, 10, 10)
+        ));
+
+        buildCalculateButton();
+        buildCancelButton();
+    }
+
+    private void buildSettingsPanel() {
+        fibonacciSettingsPanel = new JPanel();
+        fibonacciSettingsPanel.setLayout(new BorderLayout(10, 10));
+        fibonacciSettingsPanel.add(fibonacciSamplesPanel, BorderLayout.CENTER);
+        fibonacciSettingsPanel.add(fibonacciActionsPanel, BorderLayout.EAST);
     }
 
     private void buildComboBoxes() {
@@ -66,14 +99,18 @@ public class FibonacciSettingsPanel {
             JComboBox<Integer> comboBox = createRangeComboBox(index, SAMPLE_MIN_VALUE, SAMPLE_MAX_VALUE);
 
             fibonacciSettingsPanelComboBoxes.add(comboBox);
-            fibonacciSettingsPanel.add(comboBox);
+            fibonacciSamplesPanel.add(comboBox);
         });
     }
 
     private JComboBox<Integer> createRangeComboBox(int index, int min, int max) {
+        DefaultListCellRenderer renderer = new DefaultListCellRenderer();
+        renderer.setHorizontalAlignment(DefaultTableCellRenderer.CENTER);
+
         JComboBox<Integer> comboBox = new JComboBox<>(
             IntStream.rangeClosed(min, max).boxed().toArray(Integer[]::new)
         );
+        comboBox.setRenderer(renderer);
         comboBox.setSelectedItem(samples.get(index));
         comboBox.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
@@ -93,7 +130,7 @@ public class FibonacciSettingsPanel {
     }
 
     private void buildCalculateButton() {
-        fibonacciSettingsPanelCalculateButton = new JButton("Oblicz");
+        fibonacciSettingsPanelCalculateButton = new JButton("Rozpocznij");
         fibonacciSettingsPanelCalculateButton.addActionListener(actionEvent -> {
             if (samples.stream().distinct().count() < 5) {
                 JOptionPane.showMessageDialog(null, "Wybrane wartości nie powinny się powtarzać!");
@@ -101,23 +138,44 @@ public class FibonacciSettingsPanel {
                 return;
             }
 
+            blockCalculateButton();
             clearDataAfterActionIfValuesAreComputed();
             calculate();
         });
-        fibonacciSettingsPanel.add(fibonacciSettingsPanelCalculateButton);
+        fibonacciActionsPanel.add(fibonacciSettingsPanelCalculateButton);
+    }
+
+    private void buildCancelButton() {
+        fibonacciSettingsPanelCancelButton = new JButton("Zakończ");
+        fibonacciSettingsPanelCancelButton.setEnabled(false);
+        fibonacciSettingsPanelCancelButton.addActionListener(actionEvent -> {
+            blockCancelButton();
+            futures.forEach(future -> future.cancel(true));
+            executorService.execute(() -> fibonacciTablePanel.setCellsToCalculatingCancelState());
+            executorService.execute(() -> {
+                JOptionPane.showMessageDialog(
+                    null,
+                    "Obliczenia zostały przerwane.",
+                    "Komunikat",
+                    JOptionPane.INFORMATION_MESSAGE
+                );
+            });
+        });
+        fibonacciActionsPanel.add(fibonacciSettingsPanelCancelButton);
     }
 
     private void calculate() {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(() -> blockUI());
-        executor.execute(() -> fibonacciConsolePanel.write("Rozpoczęto obliczenia."));
+        executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(() -> blockUI());
+        executorService.execute(() -> unblockCancelButton());
+        executorService.execute(() -> fibonacciConsolePanel.write("Rozpoczęto obliczenia."));
         IntStream.rangeClosed(0, 4).forEach(index -> {
-            executor.execute(() -> fibonacciIterationExecutor(samples.get(index)));
-            executor.execute(() -> fibonacciRecursiveExecutor(samples.get(index)));
+            futures.add(executorService.submit(() -> fibonacciIterationExecutor(samples.get(index))));
+            futures.add(executorService.submit(() -> fibonacciRecursiveExecutor(samples.get(index))));
         });
-        executor.execute(() -> fibonacciConsolePanel.write("Zakończono obliczenia."));
-        executor.execute(() -> unblockUI());
-        executor.shutdown();
+        executorService.execute(() -> fibonacciConsolePanel.write("Zakończono obliczenia."));
+        executorService.execute(() -> blockCancelButton());
+        executorService.execute(() -> unblockUI());
     }
 
     private void fibonacciIterationExecutor(Integer n) {
@@ -163,7 +221,7 @@ public class FibonacciSettingsPanel {
     }
 
     private void clearDataAfterActionIfValuesAreComputed() {
-        if (fibonacciChartsPanel.getIterationTimes().stream().noneMatch(value -> value.equals(0L))) {
+        if (fibonacciChartsPanel.getIterationTimes().stream().anyMatch(value -> !value.equals(0L))) {
             fibonacciChartsPanel.resetData();
             fibonacciChartsPanel.updateIterationChart();
             fibonacciChartsPanel.updateRecursiveChart();
@@ -175,7 +233,6 @@ public class FibonacciSettingsPanel {
     private void blockUI() {
         application.blockTabbedPane();
         blockAllComboBoxes();
-        blockCalculateButton();
         fibonacciTablePanel.setCellsToCalculatingState();
         fibonacciConsolePanel.clearConsole();
     }
@@ -204,6 +261,14 @@ public class FibonacciSettingsPanel {
 
     private void unblockCalculateButton() {
         fibonacciSettingsPanelCalculateButton.setEnabled(true);
+    }
+
+    private void blockCancelButton() {
+        fibonacciSettingsPanelCancelButton.setEnabled(false);
+    }
+
+    private void unblockCancelButton() {
+        fibonacciSettingsPanelCancelButton.setEnabled(true);
     }
 
     public List<Integer> getSamples() {

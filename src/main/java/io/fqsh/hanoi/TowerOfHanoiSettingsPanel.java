@@ -9,6 +9,7 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
@@ -16,13 +17,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
 @Singleton
 public class TowerOfHanoiSettingsPanel {
+    private ExecutorService executorService;
+    private final List<Future<?>> futures = new ArrayList<>();
     private JPanel hanoiSettingsPanel;
-    private final List<JComboBox<Integer>> hanoiSettingsPanelComboBoxes = new ArrayList<>();
+    private JPanel hanoiSamplesPanel;
+    private JPanel hanoiActionsPanel;
     private JButton hanoiSettingsPanelCalculateButton;
+    private JButton hanoiSettingsPanelCancelButton;
+    private final List<JComboBox<Integer>> hanoiSettingsPanelComboBoxes = new ArrayList<>();
     private final List<Integer> samples = Arrays.asList(20, 21, 22, 23, 24);
     public static final int SAMPLE_MIN_VALUE = 1;
     public static final int SAMPLE_MAX_VALUE = 25;
@@ -40,25 +47,51 @@ public class TowerOfHanoiSettingsPanel {
     private TowerOfHanoiConsolePanel hanoiConsolePanel;
 
     public JPanel build() {
+        buildSamplesPanel();
+        buildActionsPanel();
         buildSettingsPanel();
-        buildComboBoxes();
-        buildCalculateButton();
 
         return hanoiSettingsPanel;
     }
 
-    private void buildSettingsPanel() {
-        hanoiSettingsPanel = new JPanel();
-        hanoiSettingsPanel.setLayout(new GridLayout(1, 6, 10, 10));
-        hanoiSettingsPanel.setBorder(new CompoundBorder(
+    private void buildSamplesPanel() {
+        hanoiSamplesPanel = new JPanel();
+        hanoiSamplesPanel.setLayout(new GridLayout(1, 5, 10, 10));
+        hanoiSamplesPanel.setBorder(new CompoundBorder(
             BorderFactory.createTitledBorder(
-                hanoiSettingsPanel.getBorder(),
+                hanoiSamplesPanel.getBorder(),
                 "Liczba krążków do przełożenia",
                 TitledBorder.CENTER,
                 TitledBorder.TOP
             ),
             new EmptyBorder(10, 10, 10, 10)
         ));
+
+        buildComboBoxes();
+    }
+
+    private void buildActionsPanel() {
+        hanoiActionsPanel = new JPanel();
+        hanoiActionsPanel.setLayout(new GridLayout(1, 2, 10, 10));
+        hanoiActionsPanel.setBorder(new CompoundBorder(
+            BorderFactory.createTitledBorder(
+                hanoiActionsPanel.getBorder(),
+                "Obliczenia",
+                TitledBorder.CENTER,
+                TitledBorder.TOP
+            ),
+            new EmptyBorder(10, 10, 10, 10)
+        ));
+
+        buildCalculateButton();
+        buildCancelButton();
+    }
+
+    private void buildSettingsPanel() {
+        hanoiSettingsPanel = new JPanel();
+        hanoiSettingsPanel.setLayout(new BorderLayout(10, 10));
+        hanoiSettingsPanel.add(hanoiSamplesPanel, BorderLayout.CENTER);
+        hanoiSettingsPanel.add(hanoiActionsPanel, BorderLayout.EAST);
     }
 
     private void buildComboBoxes() {
@@ -66,14 +99,18 @@ public class TowerOfHanoiSettingsPanel {
             JComboBox<Integer> comboBox = createRangeComboBox(index, SAMPLE_MIN_VALUE, SAMPLE_MAX_VALUE);
 
             hanoiSettingsPanelComboBoxes.add(comboBox);
-            hanoiSettingsPanel.add(comboBox);
+            hanoiSamplesPanel.add(comboBox);
         });
     }
 
     private JComboBox<Integer> createRangeComboBox(int index, int min, int max) {
+        DefaultListCellRenderer renderer = new DefaultListCellRenderer();
+        renderer.setHorizontalAlignment(DefaultTableCellRenderer.CENTER);
+
         JComboBox<Integer> comboBox = new JComboBox<>(
             IntStream.rangeClosed(min, max).boxed().toArray(Integer[]::new)
         );
+        comboBox.setRenderer(renderer);
         comboBox.setSelectedItem(samples.get(index));
         comboBox.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
@@ -93,7 +130,7 @@ public class TowerOfHanoiSettingsPanel {
     }
 
     private void buildCalculateButton() {
-        hanoiSettingsPanelCalculateButton = new JButton("Oblicz");
+        hanoiSettingsPanelCalculateButton = new JButton("Rozpocznij");
         hanoiSettingsPanelCalculateButton.addActionListener(actionEvent -> {
             if (samples.stream().distinct().count() < 5) {
                 JOptionPane.showMessageDialog(null, "Wybrane wartości nie powinny się powtarzać!");
@@ -101,23 +138,44 @@ public class TowerOfHanoiSettingsPanel {
                 return;
             }
 
+            blockCalculateButton();
             clearDataAfterActionIfValuesAreComputed();
             calculate();
         });
-        hanoiSettingsPanel.add(hanoiSettingsPanelCalculateButton);
+        hanoiActionsPanel.add(hanoiSettingsPanelCalculateButton);
+    }
+
+    private void buildCancelButton() {
+        hanoiSettingsPanelCancelButton = new JButton("Zakończ");
+        hanoiSettingsPanelCancelButton.setEnabled(false);
+        hanoiSettingsPanelCancelButton.addActionListener(actionEvent -> {
+            blockCancelButton();
+            futures.forEach(future -> future.cancel(true));
+            executorService.execute(() -> hanoiTablePanel.setCellsToCalculatingCancelState());
+            executorService.execute(() -> {
+                JOptionPane.showMessageDialog(
+                    null,
+                    "Obliczenia zostały przerwane.",
+                    "Komunikat",
+                    JOptionPane.INFORMATION_MESSAGE
+                );
+            });
+        });
+        hanoiActionsPanel.add(hanoiSettingsPanelCancelButton);
     }
 
     private void calculate() {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(() -> blockUI());
-        executor.execute(() -> hanoiConsolePanel.write("Rozpoczęto obliczenia."));
+        executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(() -> blockUI());
+        executorService.execute(() -> unblockCancelButton());
+        executorService.execute(() -> hanoiConsolePanel.write("Rozpoczęto obliczenia."));
         IntStream.rangeClosed(0, 4).forEach(index -> {
-            executor.execute(() -> hanoiIterationExecutor(samples.get(index)));
-            executor.execute(() -> hanoiRecursiveExecutor(samples.get(index)));
+            futures.add(executorService.submit(() -> hanoiIterationExecutor(samples.get(index))));
+            futures.add(executorService.submit(() -> hanoiRecursiveExecutor(samples.get(index))));
         });
-        executor.execute(() -> hanoiConsolePanel.write("Zakończono obliczenia."));
-        executor.execute(() -> unblockUI());
-        executor.shutdown();
+        executorService.execute(() -> hanoiConsolePanel.write("Zakończono obliczenia."));
+        executorService.execute(() -> blockCancelButton());
+        executorService.execute(() -> unblockUI());
     }
 
     private void hanoiIterationExecutor(Integer n) {
@@ -177,7 +235,7 @@ public class TowerOfHanoiSettingsPanel {
     }
 
     private void clearDataAfterActionIfValuesAreComputed() {
-        if (hanoiChartsPanel.getIterationTimes().stream().noneMatch(value -> value.equals(0L))) {
+        if (hanoiChartsPanel.getIterationTimes().stream().anyMatch(value -> !value.equals(0L))) {
             hanoiChartsPanel.resetData();
             hanoiChartsPanel.updateIterationChart();
             hanoiChartsPanel.updateRecursiveChart();
@@ -189,7 +247,6 @@ public class TowerOfHanoiSettingsPanel {
     private void blockUI() {
         application.blockTabbedPane();
         blockAllComboBoxes();
-        blockCalculateButton();
         hanoiTablePanel.setCellsToCalculatingState();
         hanoiConsolePanel.clearConsole();
     }
@@ -218,6 +275,14 @@ public class TowerOfHanoiSettingsPanel {
 
     private void unblockCalculateButton() {
         hanoiSettingsPanelCalculateButton.setEnabled(true);
+    }
+
+    private void blockCancelButton() {
+        hanoiSettingsPanelCancelButton.setEnabled(false);
+    }
+
+    private void unblockCancelButton() {
+        hanoiSettingsPanelCancelButton.setEnabled(true);
     }
 
     public List<Integer> getSamples() {
