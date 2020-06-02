@@ -41,6 +41,10 @@ public class Utils {
         }
     }
 
+    public static boolean areSamplesValuesDistinct(List<Integer> samples) {
+        return samples.stream().distinct().count() == samples.size();
+    }
+
     public static boolean areSamplesInAscendingOrder(List<Integer> samples) {
         for (int i = 0; i < samples.size() - 1; i++) {
             if (samples.get(i) > samples.get(i + 1)) {

@@ -115,10 +115,40 @@ public class QuickSortSettingsPanel {
         comboBox.setSelectedItem(samples.get(index));
         comboBox.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
-                clearDataAfterActionIfValuesAreComputed();
+                Integer previousValue = samples.get(index);
 
                 Integer value = (Integer) itemEvent.getItem();
                 samples.set(index, value);
+
+                clearDataAfterActionIfValuesAreComputed();
+
+                if (!Utils.areSamplesValuesDistinct(samples)) {
+                    JOptionPane.showMessageDialog(
+                        null,
+                        "Wybrane wartości nie powinny się powtarzać!",
+                        "Komunikat",
+                        JOptionPane.INFORMATION_MESSAGE
+                    );
+
+                    samples.set(index, previousValue);
+                    quickSortSettingsPanelComboBoxes.get(index).setSelectedItem(previousValue);
+
+                    return;
+                }
+
+                if (!Utils.areSamplesInAscendingOrder(samples)) {
+                    JOptionPane.showMessageDialog(
+                        null,
+                        "Wybrane wartości powinny występować w porządku rosnącym!",
+                        "Komunikat",
+                        JOptionPane.INFORMATION_MESSAGE
+                    );
+
+                    samples.set(index, previousValue);
+                    quickSortSettingsPanelComboBoxes.get(index).setSelectedItem(previousValue);
+
+                    return;
+                }
 
                 quickSortChartsPanel.updateIterationChart();
                 quickSortChartsPanel.updateRecursiveChart();
@@ -133,18 +163,6 @@ public class QuickSortSettingsPanel {
     private void buildCalculateButton() {
         quickSortSettingsPanelCalculateButton = new JButton("Rozpocznij");
         quickSortSettingsPanelCalculateButton.addActionListener(actionEvent -> {
-            if (samples.stream().distinct().count() < 5) {
-                JOptionPane.showMessageDialog(null, "Wybrane wartości nie powinny się powtarzać!");
-
-                return;
-            }
-
-            if (!Utils.areSamplesInAscendingOrder(samples)) {
-                JOptionPane.showMessageDialog(null, "Wybrane wartości powinny występować w porządku rosnącym!");
-
-                return;
-            }
-
             blockCalculateButton();
             clearDataAfterActionIfValuesAreComputed();
             calculate();
