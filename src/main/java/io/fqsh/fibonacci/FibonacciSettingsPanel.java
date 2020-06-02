@@ -138,6 +138,12 @@ public class FibonacciSettingsPanel {
                 return;
             }
 
+            if (!Utils.areSamplesInAscendingOrder(samples)) {
+                JOptionPane.showMessageDialog(null, "Wybrane wartości powinny występować w porządku rosnącym!");
+
+                return;
+            }
+
             blockCalculateButton();
             clearDataAfterActionIfValuesAreComputed();
             calculate();
