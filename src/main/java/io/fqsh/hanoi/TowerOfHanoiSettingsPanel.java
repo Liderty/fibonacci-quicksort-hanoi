@@ -32,7 +32,7 @@ public class TowerOfHanoiSettingsPanel {
     private final List<JComboBox<Integer>> hanoiSettingsPanelComboBoxes = new ArrayList<>();
     private final List<Integer> samples = Arrays.asList(16, 17, 18, 19, 20);
     public static final int SAMPLE_MIN_VALUE = 1;
-    public static final int SAMPLE_MAX_VALUE = 25;
+    public static final int SAMPLE_MAX_VALUE = 20;
 
     @Inject
     private Application application;
