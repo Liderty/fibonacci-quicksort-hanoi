@@ -36,7 +36,6 @@ public class TowerOfHanoiConsolePanel {
             dateTimeFormatter.format(LocalDateTime.now()),
             message
         ));
-
         hanoiConsoleTextArea.setCaretPosition(hanoiConsoleTextArea.getDocument().getLength());
     }
 

@@ -1,5 +1,6 @@
 package io.fqsh;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class Utils {
@@ -38,5 +39,19 @@ public class Utils {
 
             return String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
         }
+    }
+
+    public static boolean areSamplesValuesDistinct(List<Integer> samples) {
+        return samples.stream().distinct().count() == samples.size();
+    }
+
+    public static boolean areSamplesInAscendingOrder(List<Integer> samples) {
+        for (int i = 0; i < samples.size() - 1; i++) {
+            if (samples.get(i) > samples.get(i + 1)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

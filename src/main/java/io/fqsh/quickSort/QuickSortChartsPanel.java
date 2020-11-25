@@ -32,47 +32,57 @@ public class QuickSortChartsPanel {
         quickSortChartsPanel = new JPanel();
         quickSortChartsPanel.setLayout(new GridLayout(1, 2));
         quickSortChartsPanel.setBorder(BorderFactory.createTitledBorder(
-                quickSortChartsPanel.getBorder(),
-            "Wykresy czasu obliczeń w zależności od podejścia",
+            quickSortChartsPanel.getBorder(),
+            "Wykresy prezentujące czas obliczania w zależności od podejścia",
             TitledBorder.CENTER,
             TitledBorder.TOP
         ));
 
-        iterationChart = new XYChartBuilder()
-            .title("Iteracyjnie")
-            .xAxisTitle("Ilość sortowanych danych (w tys.)")
-            .yAxisTitle("Czas obliczania (ns)")
-            .build();
-
-        iterationChart.getStyler().setChartBackgroundColor(new Color(238, 238, 238));
-        iterationChart.getStyler().setChartTitlePadding(10);
-        iterationChart.getStyler().setLegendVisible(false);
-        iterationChart.getStyler().setToolTipsEnabled(true);
-        iterationChart.getStyler().setToolTipType(Styler.ToolTipType.yLabels);
-
-        iterationChart.addSeries("times", quickSortSettingsPanel.getSamples(), iterationTimes);
-
-        recursiveChart = new XYChartBuilder()
-            .title("Rekurencyjnie")
-            .xAxisTitle("Ilość sortowanych danych (w tys.)")
-            .yAxisTitle("Czas obliczania (ns)")
-            .build();
-
-        recursiveChart.getStyler().setChartBackgroundColor(new Color(238, 238, 238));
-        recursiveChart.getStyler().setChartTitlePadding(10);
-        recursiveChart.getStyler().setLegendVisible(false);
-        recursiveChart.getStyler().setToolTipsEnabled(true);
-        recursiveChart.getStyler().setToolTipType(Styler.ToolTipType.yLabels);
-
-        recursiveChart.addSeries("times", quickSortSettingsPanel.getSamples(), recursiveTimes);
-
-        iterationChartPanel = new XChartPanel<>(iterationChart);
-        recursiveChartPanel = new XChartPanel<>(recursiveChart);
-
+        buildIterationChart();
         quickSortChartsPanel.add(iterationChartPanel);
+
+        buildRecursiveChart();
         quickSortChartsPanel.add(recursiveChartPanel);
 
         return quickSortChartsPanel;
+    }
+
+    private void buildIterationChart() {
+        iterationChart = new XYChartBuilder()
+            .title("Iteracyjnie")
+            .xAxisTitle("Liczba elementów (w tys.)")
+            .yAxisTitle("Czas obliczania (ns)")
+            .build();
+
+        iterationChart.addSeries("times", quickSortSettingsPanel.getSamples(), iterationTimes);
+
+        iterationChart.getStyler()
+            .setChartBackgroundColor(new Color(238, 238, 238))
+            .setChartTitlePadding(10)
+            .setLegendVisible(false)
+            .setToolTipsEnabled(true)
+            .setToolTipType(Styler.ToolTipType.yLabels);
+
+        iterationChartPanel = new XChartPanel<>(iterationChart);
+    }
+
+    private void buildRecursiveChart() {
+        recursiveChart = new XYChartBuilder()
+            .title("Rekurencyjnie")
+            .xAxisTitle("Liczba elementów (w tys.)")
+            .yAxisTitle("Czas obliczania (ns)")
+            .build();
+
+        recursiveChart.addSeries("times", quickSortSettingsPanel.getSamples(), recursiveTimes);
+
+        recursiveChart.getStyler()
+            .setChartBackgroundColor(new Color(238, 238, 238))
+            .setChartTitlePadding(10)
+            .setLegendVisible(false)
+            .setToolTipsEnabled(true)
+            .setToolTipType(Styler.ToolTipType.yLabels);
+
+        recursiveChartPanel = new XChartPanel<>(recursiveChart);
     }
 
     public void setIterationTimeAt(int index, long value) {

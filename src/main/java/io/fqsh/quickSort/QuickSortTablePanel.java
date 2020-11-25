@@ -39,7 +39,7 @@ public class QuickSortTablePanel {
         panel.setBorder(new CompoundBorder(
             BorderFactory.createTitledBorder(
                 panel.getBorder(),
-                "Tabela czasów obliczeń w zależności od podejścia",
+                "Tabela czasów obliczania w zależności od podejścia",
                 TitledBorder.CENTER,
                 TitledBorder.TOP
             ),
@@ -52,7 +52,7 @@ public class QuickSortTablePanel {
 
     private JScrollPane buildTable() {
         String[] columns = new String[] {
-            "Ilość sortowanych danych (w tys.)", "Czas obliczenia - iteracyjnie", "Czas obliczenia - rekurencyjnie"
+            "Liczba elementów (w tys.)", "Czas obliczania - iteracyjnie", "Czas obliczania - rekurencyjnie"
         };
 
         Object[][] rows = new Object[5][3];
@@ -86,6 +86,18 @@ public class QuickSortTablePanel {
 
     public void setCellsToCalculatingState() {
         setValueToCells("Obliczanie...");
+    }
+
+    public void setCellsToCalculatingCancelState() {
+        IntStream.rangeClosed(0, 4).forEach(index -> {
+            if (model.getValueAt(index, 1).equals("Obliczanie...")) {
+                model.setValueAt("0 ns", index, 1);
+            }
+
+            if (model.getValueAt(index, 2).equals("Obliczanie...")) {
+                model.setValueAt("0 ns", index, 2);
+            }
+        });
     }
 
     private void setValueToCells(String message) {

@@ -9,23 +9,31 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Future;
 import java.util.stream.IntStream;
-
 
 @Singleton
 public class QuickSortSettingsPanel {
+    private ExecutorService executorService;
+    private final List<Future<?>> futures = new ArrayList<>();
     private JPanel quickSortSettingsPanel;
-    private final List<JComboBox<Integer>> quickSortSettingsPanelComboBoxes = new ArrayList<>();
+    private JPanel quickSortSamplesPanel;
+    private JPanel quickSortActionsPanel;
     private JButton quickSortSettingsPanelCalculateButton;
-    private final List<Integer> samples = Arrays.asList(5, 10, 30, 50, 80);
+    private JButton quickSortSettingsPanelCancelButton;
+    private final List<JComboBox<Integer>> quickSortSettingsPanelComboBoxes = new ArrayList<>();
+    private final List<Integer> samples = Arrays.asList(50, 60, 70, 80, 90);
+    public static final int SAMPLE_MIN_VALUE = 5;
+    public static final int SAMPLE_MAX_VALUE = 100;
 
     @Inject
     private Application application;
@@ -40,49 +48,111 @@ public class QuickSortSettingsPanel {
     private QuickSortConsolePanel quickSortConsolePanel;
 
     public JPanel build() {
+        buildSamplesPanel();
+        buildActionsPanel();
         buildSettingsPanel();
-        buildComboBoxes();
-        buildCalculateButton();
 
         return quickSortSettingsPanel;
     }
 
+    private void buildSamplesPanel() {
+        quickSortSamplesPanel = new JPanel();
+        quickSortSamplesPanel.setLayout(new GridLayout(1, 5, 10, 10));
+        quickSortSamplesPanel.setBorder(new CompoundBorder(
+            BorderFactory.createTitledBorder(
+                quickSortSamplesPanel.getBorder(),
+                "Liczba elementów do posortowania (w tys.)",
+                TitledBorder.CENTER,
+                TitledBorder.TOP
+            ),
+            new EmptyBorder(10, 10, 10, 10)
+        ));
+
+        buildComboBoxes();
+    }
+
+    private void buildActionsPanel() {
+        quickSortActionsPanel = new JPanel();
+        quickSortActionsPanel.setLayout(new GridLayout(1, 2, 10, 10));
+        quickSortActionsPanel.setBorder(new CompoundBorder(
+            BorderFactory.createTitledBorder(
+                quickSortActionsPanel.getBorder(),
+                "Obliczenia",
+                TitledBorder.CENTER,
+                TitledBorder.TOP
+            ),
+            new EmptyBorder(10, 10, 10, 10)
+        ));
+
+        buildCalculateButton();
+        buildCancelButton();
+    }
+
     private void buildSettingsPanel() {
         quickSortSettingsPanel = new JPanel();
-        quickSortSettingsPanel.setLayout(new GridLayout(1, 6, 10, 10));
-        quickSortSettingsPanel.setBorder(new CompoundBorder(
-                BorderFactory.createTitledBorder(
-                        quickSortSettingsPanel.getBorder(),
-                        "Ilość danych do posortowania (w tys.)",
-                        TitledBorder.CENTER,
-                        TitledBorder.TOP
-                ),
-                new EmptyBorder(10, 10, 10, 10)
-        ));
+        quickSortSettingsPanel.setLayout(new BorderLayout(10, 10));
+        quickSortSettingsPanel.add(quickSortSamplesPanel, BorderLayout.CENTER);
+        quickSortSettingsPanel.add(quickSortActionsPanel, BorderLayout.EAST);
     }
 
     private void buildComboBoxes() {
         IntStream.rangeClosed(0, 4).forEach(index -> {
-            JComboBox<Integer> comboBox = createRangeComboBox(index, 5, 100);
+            JComboBox<Integer> comboBox = createRangeComboBox(index, SAMPLE_MIN_VALUE, SAMPLE_MAX_VALUE);
 
             quickSortSettingsPanelComboBoxes.add(comboBox);
-            quickSortSettingsPanel.add(comboBox);
+            quickSortSamplesPanel.add(comboBox);
         });
     }
 
     private JComboBox<Integer> createRangeComboBox(int index, int min, int max) {
+        DefaultListCellRenderer renderer = new DefaultListCellRenderer();
+        renderer.setHorizontalAlignment(DefaultTableCellRenderer.CENTER);
+
         JComboBox<Integer> comboBox = new JComboBox<>(
-                IntStream.rangeClosed(min, max).boxed().toArray(Integer[]::new)
+            IntStream.rangeClosed(min, max).boxed().toArray(Integer[]::new)
         );
+        comboBox.setRenderer(renderer);
         comboBox.setSelectedItem(samples.get(index));
         comboBox.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
-                clearDataAfterActionIfValuesAreComputed();
+                Integer previousValue = samples.get(index);
 
                 Integer value = (Integer) itemEvent.getItem();
                 samples.set(index, value);
+
+                clearDataAfterActionIfValuesAreComputed();
+
+                if (!Utils.areSamplesValuesDistinct(samples)) {
+                    JOptionPane.showMessageDialog(
+                        null,
+                        "Wybrane wartości nie powinny się powtarzać!",
+                        "Komunikat",
+                        JOptionPane.INFORMATION_MESSAGE
+                    );
+
+                    samples.set(index, previousValue);
+                    quickSortSettingsPanelComboBoxes.get(index).setSelectedItem(previousValue);
+
+                    return;
+                }
+
+                if (!Utils.areSamplesInAscendingOrder(samples)) {
+                    JOptionPane.showMessageDialog(
+                        null,
+                        "Wybrane wartości powinny występować w porządku rosnącym!",
+                        "Komunikat",
+                        JOptionPane.INFORMATION_MESSAGE
+                    );
+
+                    samples.set(index, previousValue);
+                    quickSortSettingsPanelComboBoxes.get(index).setSelectedItem(previousValue);
+
+                    return;
+                }
+
                 quickSortChartsPanel.updateIterationChart();
                 quickSortChartsPanel.updateRecursiveChart();
+
                 quickSortTablePanel.setCellValueAt(index, 0, value);
             }
         });
@@ -91,56 +161,66 @@ public class QuickSortSettingsPanel {
     }
 
     private void buildCalculateButton() {
-        quickSortSettingsPanelCalculateButton = new JButton("Oblicz");
+        quickSortSettingsPanelCalculateButton = new JButton("Rozpocznij");
         quickSortSettingsPanelCalculateButton.addActionListener(actionEvent -> {
-            if (samples.stream().distinct().count() < 5) {
-                JOptionPane.showMessageDialog(null, "Ilość danych nie powinna się powtarzać!");
-
-                return;
-            }
-
+            blockCalculateButton();
             clearDataAfterActionIfValuesAreComputed();
             calculate();
         });
-        quickSortSettingsPanel.add(quickSortSettingsPanelCalculateButton);
+        quickSortActionsPanel.add(quickSortSettingsPanelCalculateButton);
+    }
+
+    private void buildCancelButton() {
+        quickSortSettingsPanelCancelButton = new JButton("Zakończ");
+        quickSortSettingsPanelCancelButton.setEnabled(false);
+        quickSortSettingsPanelCancelButton.addActionListener(actionEvent -> {
+            blockCancelButton();
+            futures.forEach(future -> future.cancel(true));
+            executorService.execute(() -> quickSortTablePanel.setCellsToCalculatingCancelState());
+            executorService.execute(() -> {
+                JOptionPane.showMessageDialog(
+                    null,
+                    "Obliczenia zostały przerwane.",
+                    "Komunikat",
+                    JOptionPane.INFORMATION_MESSAGE
+                );
+            });
+        });
+        quickSortActionsPanel.add(quickSortSettingsPanelCancelButton);
     }
 
     private void calculate() {
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-
-        executor.execute(this::blockUI);
-        executor.execute(() -> quickSortConsolePanel.write("Rozpoczęto sortowanie."));
-
+        executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(() -> blockUI());
+        executorService.execute(() -> unblockCancelButton());
+        executorService.execute(() -> quickSortConsolePanel.write("Rozpoczęto obliczenia."));
         IntStream.rangeClosed(0, 4).forEach(index -> {
-            int data_size = samples.get(index);
+            int elementsInThousands = samples.get(index);
+            int[] unsortedDataForIteration = simplyDataGenerator(elementsInThousands);
+            int[] unsortedDataForRecursion = unsortedDataForIteration.clone();
 
-            int [] unsortedDataForIteration = simplyDataGenerator(data_size);
-            int [] unsortedDataForRecursion = unsortedDataForIteration.clone();
+            futures.add(
+                executorService.submit(() -> quickSortIterationExecutor(elementsInThousands, unsortedDataForIteration))
+            );
 
-            executor.execute(() -> quickSortIterationWrapper(data_size, unsortedDataForIteration));
-            executor.execute(() -> quickSortRecursiveWrapper(data_size, unsortedDataForRecursion));
+            futures.add(
+                executorService.submit(() -> quickSortRecursiveExecutor(elementsInThousands, unsortedDataForRecursion))
+            );
         });
-
-        executor.execute(() -> quickSortConsolePanel.write("Zakończono sortowanie."));
-        executor.execute(this::unblockUI);
+        executorService.execute(() -> quickSortConsolePanel.write("Zakończono obliczenia."));
+        executorService.execute(() -> blockCancelButton());
+        executorService.execute(() -> unblockUI());
     }
 
-    private int[] simplyDataGenerator(int data_size) {
-        int[] sampleArray = new int[data_size*1000];
-        Random generator = new Random();
-
-        for (int i = 0; i < sampleArray.length; i++) {
-            sampleArray[i] = generator.nextInt(1000);
-        }
-
-        return sampleArray;
+    private int[] simplyDataGenerator(int elementsInThousands) {
+        return (new Random()).ints(elementsInThousands * 1000, 0, 100_000).toArray();
     }
 
-    private void quickSortIterationWrapper(int n, int [] unsorted_data) {
+    private void quickSortIterationExecutor(int n, int[] unsortedData) {
         int index = samples.indexOf(n);
 
         long startTime = System.nanoTime();
-        quickSortIteration(unsorted_data, 0, unsorted_data.length - 1);
+        QuickSortIteration.calculate(unsortedData, 0, unsortedData.length - 1);
         long finishTime = System.nanoTime();
 
         long timeElapsed = finishTime - startTime;
@@ -150,63 +230,17 @@ public class QuickSortSettingsPanel {
         quickSortTablePanel.setCellValueAt(index, 1, Utils.convertTime(timeElapsed));
 
         quickSortConsolePanel.write(String.format(
-                "Losowe dane o rozmiarze: %,d (tys.) zostały posortowane iteracyjnie w czasie: %s. ",
-                n,
-                Utils.convertTime(timeElapsed)
+            "Losowe elementy o rozmiarze: %,d tys. zostały posortowane iteracyjnie w czasie: %s.",
+            n,
+            Utils.convertTime(timeElapsed)
         ));
     }
 
-    private int separate(int separatedArray[], int leftIndex, int rightIndex) {
-        int separatorValueRight = separatedArray[rightIndex];
-        int separatorLeftIndex = leftIndex - 1;
-
-        for (int s = leftIndex; s < rightIndex; s++) {
-            if (separatedArray[s] < separatorValueRight) {
-                separatorLeftIndex++;
-
-                int tmp = separatedArray[separatorLeftIndex];
-                separatedArray[separatorLeftIndex] = separatedArray[s];
-                separatedArray[s] = tmp;
-            }
-        }
-
-        int tmp = separatedArray[separatorLeftIndex + 1];
-        separatedArray[separatorLeftIndex + 1] = separatedArray[rightIndex];
-        separatedArray[rightIndex] = tmp;
-
-        return separatorLeftIndex + 1;
-    }
-
-    private void quickSortIteration(int sortedArray[], int leftIndex, int rightIndex) {
-        int[] stack = new int[rightIndex - leftIndex + 1];
-        int top = 0;
-
-        stack[top] = leftIndex;
-        stack[++top] = rightIndex;
-
-        while (top >= 0) {
-            rightIndex = stack[top--];
-            leftIndex = stack[top--];
-
-            int separator = separate(sortedArray, leftIndex, rightIndex);
-
-            if ((separator - 1) > leftIndex) {
-                stack[++top] = leftIndex;
-                stack[++top] = rightIndex - 1;
-            }
-
-            if ((separator + 1) < rightIndex) {
-                stack[++top] = separator + 1;
-                stack[++top] = rightIndex;
-            }
-        }
-    }
-
-    private void quickSortRecursiveWrapper(int n, int [] unsorted_data) {
+    private void quickSortRecursiveExecutor(int n, int[] unsortedData) {
         int index = samples.indexOf(n);
 
         long startTime = System.nanoTime();
-        quickSortRecursive(unsorted_data, 0, unsorted_data.length - 1);
+        QuickSortRecursive.calculate(unsortedData, 0, unsortedData.length - 1);
         long finishTime = System.nanoTime();
 
         long timeElapsed = finishTime - startTime;
@@ -216,24 +250,14 @@ public class QuickSortSettingsPanel {
         quickSortTablePanel.setCellValueAt(index, 2, Utils.convertTime(timeElapsed));
 
         quickSortConsolePanel.write(String.format(
-                "Losowe dane o rozmiarze: %,d (tys.) zostały posortowane rekurencyjnie w czasie: %s. ",
-                n,
-                Utils.convertTime(timeElapsed)
+            "Losowe elementy o rozmiarze: %,d tys. zostały posortowane rekurencyjnie w czasie: %s.",
+            n,
+            Utils.convertTime(timeElapsed)
         ));
     }
 
-    private void quickSortRecursive(int sortedArray[], int leftIndex, int rightIndex) {
-        if (leftIndex < rightIndex) {
-            int separationIndex = separate(sortedArray, leftIndex, rightIndex);
-
-            quickSortRecursive(sortedArray, leftIndex, separationIndex - 1);
-            quickSortRecursive(sortedArray, separationIndex + 1, rightIndex);
-        }
-    }
-
     private void clearDataAfterActionIfValuesAreComputed() {
-
-        if (quickSortChartsPanel.getIterationTimes().stream().noneMatch(value -> value.equals(0L))) {
+        if (quickSortChartsPanel.getIterationTimes().stream().anyMatch(value -> !value.equals(0L))) {
             quickSortChartsPanel.resetData();
             quickSortChartsPanel.updateIterationChart();
             quickSortChartsPanel.updateRecursiveChart();
@@ -245,7 +269,6 @@ public class QuickSortSettingsPanel {
     private void blockUI() {
         application.blockTabbedPane();
         blockAllComboBoxes();
-        blockCalculateButton();
         quickSortTablePanel.setCellsToCalculatingState();
         quickSortConsolePanel.clearConsole();
     }
@@ -274,6 +297,14 @@ public class QuickSortSettingsPanel {
 
     private void unblockCalculateButton() {
         quickSortSettingsPanelCalculateButton.setEnabled(true);
+    }
+
+    private void blockCancelButton() {
+        quickSortSettingsPanelCancelButton.setEnabled(false);
+    }
+
+    private void unblockCancelButton() {
+        quickSortSettingsPanelCancelButton.setEnabled(true);
     }
 
     public List<Integer> getSamples() {

@@ -21,13 +21,13 @@ public class Application {
     private QuickSortPanel quickSortPanel;
 
     @Inject
-    private TowerOfHanoiPanel hanoiPanel;
+    private TowerOfHanoiPanel towerOfHanoiPanel;
 
     public static void main(String[] args) {
         Injector injector = Guice.createInjector();
         Application application = injector.getInstance(Application.class);
 
-        SwingUtilities.invokeLater(application::run);
+        SwingUtilities.invokeLater(() -> application.run());
     }
 
     public void run() {
@@ -35,22 +35,21 @@ public class Application {
         buildFrame();
     }
 
+    private void buildTabbedPane() {
+        tabbedPane = new JTabbedPane();
+        tabbedPane.add("Liczby Fibonacciego", fibonacciPanel.build());
+        tabbedPane.add("Sortowanie szybkie (QuickSort)", quickSortPanel.build());
+        tabbedPane.add("Wieże Hanoi", towerOfHanoiPanel.build());
+    }
+
     private void buildFrame() {
-        frame = new JFrame("Liczby Fibonacciego, Sortowanie Szybkie (Quick Sort), Wieże Hanoi - iteracyjnie i rekurencyjnie (M. Liber, P. Lyschik, 2020)");
+        frame = new JFrame("Liczby Fibonacciego, Sortowanie szybkie (QuickSort), Wieże Hanoi - iteracyjnie i rekurencyjnie (M. Liber, P. Lyschik, 2020)");
         frame.setLayout(new BorderLayout(10, 10));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(960, 720);
         frame.setVisible(true);
         frame.setLocationRelativeTo(null);
         frame.add(tabbedPane, BorderLayout.CENTER);
-    }
-
-    private void buildTabbedPane() {
-        tabbedPane = new JTabbedPane();
-
-        tabbedPane.add("Liczby Fibonacciego", fibonacciPanel.build());
-        tabbedPane.add("Sortowanie Szybkie (Quick Sort)", quickSortPanel.build());
-        tabbedPane.add("Wieże Hanoi", hanoiPanel.build());
     }
 
     public void blockTabbedPane() {
